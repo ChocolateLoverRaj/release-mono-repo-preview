@@ -1,0 +1,36 @@
+name: Release Preview
+description: Get PR tags based on the type of release a mono repo PR will trigger
+inputs:
+  packages:
+    description: List of all packages in the mono repo
+    required: true
+  increments:
+    description: Increments gotten from detect-increment
+    required: true
+  new_packages:
+    description: Packages which need to be published without a version bump
+    required: true
+outputs:
+  manage:
+    description: JSON array of labels to be managed
+    value: ${{ steps.main.outputs.manage }}
+  set:
+    description: JSON array of labels to be set
+    value: ${{ steps.main.outputs.set }}
+runs:
+  using: composite
+  steps:
+    - run: pnpm i
+      shell: bash
+      working-directory: ${{ github.action_path }}
+    - run: pnpm run build
+      shell: bash
+      working-directory: ${{ github.action_path }}
+    - id: main
+      run: pnpm start
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        INPUT_PACKAGES: ${{ inputs.packages }}
+        INPUT_INCREMENTS: ${{ inputs.increments }}
+        INPUT_NEW_PACKAGES: ${{ inputs.new_packages }}
